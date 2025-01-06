@@ -1,0 +1,23 @@
+{
+  "name": "erebot",
+  "version": "1.0.0",
+  "description": "A bot for the Esolang Reverse Engineering contest.",
+  "scripts": {
+    "deploy-commands": "npx ts-node src/deploy-commands.ts",
+    "start": "npx ts-node src/index.ts"
+  },
+  "keywords": [],
+  "author": "Kamila Szewczyk",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@types/sqlite3": "^3.1.11",
+    "discord.js": "^14.17.2",
+    "dotenv": "^16.4.7",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
