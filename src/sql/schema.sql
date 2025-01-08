@@ -26,3 +26,11 @@ CREATE TABLE IF NOT EXISTS "solutions" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 CREATE TABLE sqlite_stat1(tbl,idx,stat);
+CREATE TABLE IF NOT EXISTS "validation_queue" (
+	"id"	INTEGER NOT NULL,
+	"submitter_id"	TEXT NOT NULL,
+	"content"	BLOB NOT NULL,
+	"task_id"	INTEGER NOT NULL,
+	"score"	INTEGER NOT NULL,
+	PRIMARY KEY("id" AUTOINCREMENT)
+)

@@ -20,7 +20,8 @@ const commands = [
     .addSubcommand(subcommand =>
       subcommand.setName('hall').setDescription('Display the Hall of Fame of EsoRE.')
         .addIntegerOption(option =>
-          option.setName('page').setDescription('The page number (optional, first if not given)').setRequired(false)))
+          option.setName('page').setDescription('The page number (optional, first if not given)').setRequired(false))),
+  new SlashCommandBuilder().setName('eadmin').setDescription('EsoRE admin commands')
 ].map(command => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);
