@@ -10,13 +10,14 @@
   "author": "Kamila Szewczyk",
   "license": "AGPL-3.0-only",
   "dependencies": {
-    "@types/sqlite3": "^3.1.11",
     "discord.js": "^14.17.2",
     "dotenv": "^16.4.7",
+    "jszip": "^3.10.1",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "@types/sqlite3": "^3.1.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }

@@ -11,3 +11,9 @@ export const sendSuccessEmbedWithAttachment = async (interaction: any, title: st
 
 export const sendErrorEmbed = async (interaction: any, title: string, description: string) =>
   await interaction.reply({ embeds: [makeEmbed('#990000', title, description)] });
+
+export const followUpSuccessEmbed = async (interaction: any, title: string, description: string) =>
+  await interaction.followUp({ embeds: [makeEmbed('#009900', title, description)] });
+
+export const followUpErrorEmbed = async (interaction: any, title: string, description: string) =>
+  await interaction.followUp({ embeds: [makeEmbed('#990000', title, description)] });

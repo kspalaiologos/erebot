@@ -18,10 +18,28 @@ const commands = [
         .addIntegerOption(option =>
           option.setName('round').setDescription('The round number (optional, latest if not given)').setRequired(false)))
     .addSubcommand(subcommand =>
+      subcommand.setName('submit').setDescription('Submit your solution for a task.')
+        .addIntegerOption(option =>
+          option.setName('task').setDescription('The task number.').setRequired(true))
+        .addAttachmentOption(option =>
+          option.setName('file').setDescription('The file to submit.').setRequired(true)))
+    .addSubcommand(subcommand =>
       subcommand.setName('hall').setDescription('Display the Hall of Fame of EsoRE.')
         .addIntegerOption(option =>
           option.setName('page').setDescription('The page number (optional, first if not given)').setRequired(false))),
   new SlashCommandBuilder().setName('eadmin').setDescription('EsoRE admin commands')
+    .addSubcommand(subcommand =>
+      subcommand.setName('start').setDescription('Start a new round.')
+        .addAttachmentOption(option =>
+          option.setName('data').setDescription('Round data.').setRequired(true)))
+    .addSubcommand(subcommand =>
+      subcommand.setName('submitas').setDescription('Submit someone\'s solution for a task.')
+        .addIntegerOption(option =>
+          option.setName('task').setDescription('The task number.').setRequired(true))
+        .addAttachmentOption(option =>
+          option.setName('file').setDescription('The file to submit.').setRequired(true))
+        .addUserOption(option =>
+          option.setName('user').setDescription('The user to submit as.').setRequired(true)))
 ].map(command => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN!);

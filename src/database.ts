@@ -28,7 +28,6 @@ export type TaskRow = {
   game_id: number,
   description: string,
   points: number,
-  test_program: string,
   score_program: string
 };
 
@@ -80,3 +79,13 @@ export const fetchSolvedByTableForRound = async (db: Database, roundId: number) 
 
 export const fetchHallOfFame = async (db: Database, page: number) =>
   dbAll<string[]>(db, getCachedExpression('hall_of_fame'), [10 * (page - 1)], 'hall_of_fame');
+
+export const insertGame = async (db: Database, name: string, interpreter: Buffer, interpreterType: string, startTime: number, endTime: number) => {
+  db.run('INSERT INTO games (name, interpreter, interpreter_type, start_time_utc, end_time_utc) VALUES (?, ?, ?, ?, ?)', [name, interpreter, interpreterType, startTime, endTime]);
+  return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');
+}
+
+export const insertTask = async (db: Database, gameId: number, description: string, points: number, scoreProgram: string) => {
+  db.run('INSERT INTO tasks (game_id, description, points, score_program) VALUES (?, ?, ?, ?)', [gameId, description, points, scoreProgram]);
+  return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');
+}

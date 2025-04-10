@@ -10,7 +10,9 @@ import {
   sendErrorEmbed,
 } from './embed';
 import { formatPlural, formatUtcTime, trimTrailing } from './util';
+import { adminCreateRound } from './admin';
 import { Database } from 'sqlite3';
+import { submitSolution } from './submit';
 
 dotenv.config();
 
@@ -88,6 +90,32 @@ ${(await fetchSolvedByTableForRound(db, row['id'])).join('\n')}`);
         await sendSuccessEmbed(interaction, 'Hall of Fame',
 `### Top ${10 * page} players (page ${page}):
 ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('\n')}`);
+        break;
+      }
+      case 'submit': {
+        const task = options.getInteger('task');
+        const data = await (await fetch(options.getAttachment('file')?.url!)).blob();
+        const who = interaction.user;
+        submitSolution(interaction, db, task!, who, data);
+        break;
+      }
+    }
+  } else if (commandName == 'eadmin') {
+    if (interaction.user.id !== process.env.OWNER_ID) {
+      await sendErrorEmbed(interaction, 'Error', 'Insufficient permissions.');
+      return;
+    }
+    switch (options.getSubcommand()) {
+      case 'start': {
+        const roundData = await (await fetch(options.getAttachment('data')?.url!)).blob();
+        adminCreateRound(db, interaction, roundData);
+        break;
+      }
+      case 'submitas': {
+        const task = options.getInteger('task');
+        const data = await (await fetch(options.getAttachment('file')?.url!)).blob();
+        const who = options.getUser('user');
+        submitSolution(interaction, db, task!, who!, data);
         break;
       }
     }
