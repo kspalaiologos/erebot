@@ -1,5 +1,3 @@
-- Admin commands.
-- Submission commands.
-- Automated checking.
-- Manually checked submissions.
-- Test everything.
+- A way to move stuff from validation queue to confirmed submissions (admin interface).
+- Info should show what's in the validation queue.
+- Submission should not be allowed if the contest is over.

@@ -39,6 +39,14 @@ export type SolutionRow = {
   score: number
 };
 
+export type ValidationQueueRow = {
+  id: number,
+  submitter_id: string,
+  content: Buffer,
+  task_id: number,
+  score: number
+}
+
 const dbGet = <T,>(db: Database, sql: string, params: any[] = []) => {
   return new Promise<T | null>((resolve, _) => {
     db.get(sql, params, (err : Error | null, row : T) => {
@@ -80,6 +88,9 @@ export const fetchSolvedByTableForRound = async (db: Database, roundId: number) 
 export const fetchHallOfFame = async (db: Database, page: number) =>
   dbAll<string[]>(db, getCachedExpression('hall_of_fame'), [10 * (page - 1)], 'hall_of_fame');
 
+export const yankValidationQueue = async (db: Database, userId: string, taskId: number) =>
+  db.run('DELETE FROM validation_queue WHERE submitter_id = ? AND task_id = ?', [userId, taskId]);
+
 export const insertGame = async (db: Database, name: string, interpreter: Buffer, interpreterType: string, startTime: number, endTime: number) => {
   db.run('INSERT INTO games (name, interpreter, interpreter_type, start_time_utc, end_time_utc) VALUES (?, ?, ?, ?, ?)', [name, interpreter, interpreterType, startTime, endTime]);
   return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');
@@ -89,3 +100,9 @@ export const insertTask = async (db: Database, gameId: number, description: stri
   db.run('INSERT INTO tasks (game_id, description, points, score_program) VALUES (?, ?, ?, ?)', [gameId, description, points, scoreProgram]);
   return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');
 }
+
+export const insertValidationQueue = async (db: Database, userId: string, content: Buffer, taskId: number, score: number) => {
+  db.run('INSERT INTO validation_queue (submitter_id, content, task_id, score) VALUES (?, ?, ?, ?)', [userId, content, taskId, score]);
+  return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');
+}
+

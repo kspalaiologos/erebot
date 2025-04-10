@@ -7,3 +7,6 @@ export const formatPlural = (n: number, quantity: string) =>
 
 export const trimTrailing = (str: string, chars: string) =>
   str.endsWith(chars) ? str.substring(0, str.length - chars.length) : str;
+
+export const currentTimeUtc = () =>
+  Math.floor(Date.now() / 1000);
