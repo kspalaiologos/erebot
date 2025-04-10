@@ -91,6 +91,9 @@ export const fetchHallOfFame = async (db: Database, page: number) =>
 export const yankValidationQueue = async (db: Database, userId: string, taskId: number) =>
   db.run('DELETE FROM validation_queue WHERE submitter_id = ? AND task_id = ?', [userId, taskId]);
 
+export const countValidationQueue = async (db: Database) =>
+  dbGet<{count: number}>(db, 'SELECT COUNT(*) AS count FROM validation_queue');
+
 export const insertGame = async (db: Database, name: string, interpreter: Buffer, interpreterType: string, startTime: number, endTime: number) => {
   db.run('INSERT INTO games (name, interpreter, interpreter_type, start_time_utc, end_time_utc) VALUES (?, ?, ?, ?, ?)', [name, interpreter, interpreterType, startTime, endTime]);
   return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');

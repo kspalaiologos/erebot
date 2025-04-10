@@ -2,7 +2,8 @@ import { Client, GatewayIntentBits, CommandInteractionOptionResolver, Attachment
 import * as dotenv from 'dotenv';
 import {
   openDb, GameRow, TaskRow, SolutionRow,
-  fetchGameRow, fetchHallOfFame, fetchLeaderboardForRound, fetchSolvedByTableForRound, fetchTasksForRound
+  fetchGameRow, fetchHallOfFame, fetchLeaderboardForRound, fetchSolvedByTableForRound, fetchTasksForRound,
+  countValidationQueue
 } from './database';
 import {
   sendSuccessEmbed,
@@ -50,10 +51,11 @@ client.on('interactionCreate', async (interaction) => {
           return;
         }
         const tasks = await fetchTasksForRound(db, row['id']);
+        const n = (await countValidationQueue(db))!.count;
         const formattedTasks = tasks.map((task, i) => `${i+1}. ${trimTrailing(task.description, '.')}: **${formatPlural(task.points, "point")}**`).join('\n');
         await sendSuccessEmbed(interaction, `Round ${row['id']}`,
 `### ${row['name']} (${formatUtcTime(row['start_time_utc'])} - ${formatUtcTime(row['end_time_utc'])})
-
+### The validation queue contains ${formatPlural(n, "solution")}.
 ### Tasks:
 ${formattedTasks}.`);
         break;
