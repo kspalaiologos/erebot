@@ -82,6 +82,9 @@ export const fetchGameRow = async (db: Database, id: number | null) =>
     ? dbGet<GameRow>(db, 'SELECT * FROM games ORDER BY id DESC LIMIT 1')
     : dbGet<GameRow>(db, 'SELECT * FROM games WHERE id = ?', [id]);
 
+export const fetchSolution = async (db: Database, taskId: number, authorId: string) =>
+  dbGet<SolutionRow>(db, 'SELECT * FROM solutions WHERE task_id = ? AND submitter_id = ?', [taskId, authorId]);
+
 export const fetchTasksForRound = async (db: Database, roundId: number) =>
   dbAll<TaskRow>(db, 'SELECT * FROM tasks WHERE game_id = ? ORDER BY id ASC', [roundId]);
 

@@ -107,6 +107,9 @@ ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('
         await tutorial(interaction);
         break;
       }
+      case 'solution': {
+        
+      }
     }
   } else if (commandName == 'eadmin') {
     if (interaction.user.id !== (await getOwner()).id) {

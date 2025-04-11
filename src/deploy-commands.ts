@@ -18,6 +18,14 @@ const commands = [
         .addIntegerOption(option =>
           option.setName('round').setDescription('The round number (optional, latest if not given)').setRequired(false)))
     .addSubcommand(subcommand =>
+      subcommand.setName('solution').setDescription('View past solutions.')
+        .addIntegerOption(option =>
+          option.setName('round').setDescription('The round number.').setRequired(true))
+        .addIntegerOption(option =>
+          option.setName('task').setDescription('The task number.').setRequired(true))
+        .addUserOption(option =>
+          option.setName('author').setDescription('The author.').setRequired(true)))
+    .addSubcommand(subcommand =>
       subcommand.setName('tutorial').setDescription('A brief overview on how to enter EsoRE and how to use this bot.'))
     .addSubcommand(subcommand =>
       subcommand.setName('submit').setDescription('Submit your solution for a task.')
