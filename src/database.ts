@@ -115,19 +115,18 @@ export const insertValidationQueue = async (db: Database, userId: string, conten
   return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');
 }
 
-export const sendMessage = async (db: Database, recipientId: string, text: string) =>
-  db.run('INSERT INTO messages (recipient_id, message) VALUES (?, ?)', [recipientId, text]);
-
-export const hasMessages = async (db: Database, recipientId: string) => {
-  const count = await dbGet<{count: number}>(db, 'SELECT COUNT(*) AS count FROM messages WHERE recipient_id = ?', [recipientId]);
-  return count ? count.count > 0 : false;
+export const peekValidationQueue = async (db: Database) => {
+  const row = await dbGet<ValidationQueueRow>(db, 'SELECT * FROM validation_queue ORDER BY id ASC LIMIT 1');
+  return row ? row : null;
 }
 
-export const getMessages = async (db: Database, recipientId: string, limit: number) => 
-  dbAll<MessageRow>(db, 'SELECT * FROM messages WHERE recipient_id = ? ORDER BY id DESC LIMIT ?', [recipientId, limit]);
+export const popValidationQueue = async (db: Database, row: ValidationQueueRow) =>
+  db.run('DELETE FROM validation_queue WHERE id = ?', [row.id]);
 
-export const clearMessages = async (db: Database, messages: MessageRow[]) => {
-  for (const message of messages)
-    db.run('DELETE FROM messages WHERE id = ?', [message.id]);
-  return messages;
+export const transferValidationQueue = async (db: Database, row: ValidationQueueRow) => {
+  const game = await fetchGameRow(db, null);
+  const tasks = await fetchTasksForRound(db, game!.id);
+  const task = tasks[row.task_id - 1];
+  db.run('INSERT INTO solutions (submitter_id, content, task_id, score) VALUES (?, ?, ?, ?)', [row.submitter_id, row.content, task.id, row.score]);
+  popValidationQueue(db, row);
 }

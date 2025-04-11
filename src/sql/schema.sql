@@ -33,12 +33,6 @@ CREATE TABLE IF NOT EXISTS "tasks" (
 	"score_program"	TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
-CREATE TABLE IF NOT EXISTS "messages" (
-	"id"	INTEGER NOT NULL,
-	"recipient_id"	TEXT NOT NULL,
-	"message"	TEXT NOT NULL,
-	PRIMARY KEY("id" AUTOINCREMENT)
-);
 CREATE INDEX "solutions_main_idx" ON "solutions" (
 	"id",
 	"submitter_id",

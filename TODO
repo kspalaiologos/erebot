@@ -1,5 +1,4 @@
-- A way to move stuff from validation queue to confirmed submissions (admin interface).
-  - A convenient way to actually validate submissions because it's really annoying.
-  - Use the message queue to inform the participants about stuff.
+- A more convenient way to actually validate submissions because it's really annoying.
 - Some sort of a help message that explains how to use the bot.
 - Make sure that most personal responses are volatile/transient in that other people don't see them.
+- Add task 1 solutions to the db.

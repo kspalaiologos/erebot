@@ -1,8 +1,9 @@
-import { Interaction, TextChannel } from "discord.js";
+import { AttachmentBuilder, Interaction, TextChannel } from "discord.js";
 import jszip from 'jszip';
-import { followUpErrorEmbed, followUpSuccessEmbed, sendErrorEmbed, sendSuccessEmbed } from "./embed";
-import { insertGame, insertTask, ValidationQueueRow } from "./database";
+import { followUpErrorEmbed, followUpSuccessEmbed, sendErrorEmbed, sendSuccessEmbed, sendSuccessEmbedWithAttachment } from "./embed";
+import { insertGame, insertTask, peekValidationQueue, popValidationQueue, transferValidationQueue, ValidationQueueRow } from "./database";
 import { Database } from "sqlite3";
+import { notifyUser } from "./util";
 
 export const adminCreateRound = async (db: Database, interaction: Interaction, roundData: Blob) => {
   let zipfile: jszip;
@@ -112,11 +113,52 @@ Type "yes" to confirm.`);
 }
 
 export const adminVerify = async (interaction: Interaction, db: Database) => {
+  const row = await peekValidationQueue(db);
+  if (!row) {
+    await sendSuccessEmbed(interaction, 'Success', 'No entries in the validation queue.');
+    return;
+  }
+  const submitter = await interaction.client.users.fetch(row.submitter_id);
   const adminAccept = async (interaction: Interaction, db: Database, row: ValidationQueueRow) => {
-
+    await transferValidationQueue(db, row);
+    await notifyUser(submitter, `Your solution for task ${row.task_id} has been accepted.`);
   }
   const adminReject = async (interaction: Interaction, db: Database, row: ValidationQueueRow) => {
-    
+    await popValidationQueue(db, row);
+    await notifyUser(submitter, `Your solution for task ${row.task_id} has been rejected.`);
   }
-  await sendErrorEmbed(interaction, 'Error', 'This command is not implemented yet.');
+  const interpreterBuffer = Buffer.from(row.content);
+  const randomName = Math.random().toString(36).substring(2, 8);
+  const attachment = new AttachmentBuilder(interpreterBuffer).setName(`v${row.task_id}-${randomName}`);
+  await sendSuccessEmbedWithAttachment(interaction, 'Validation Queue', `Entry in the validation queue for task ${row.task_id}.\nSend "yes" to accept the entry and "no" to reject it.`, attachment);
+  try {
+    for (;;) {
+      const response = await (interaction.channel as TextChannel).awaitMessages({ max: 1, time: 300000, filter: m => m.author.id === interaction.user.id, errors: ['time'] });
+      const yesno = response.first()?.content.toLowerCase();
+      if (yesno && yesno.startsWith('no')) {
+        await followUpErrorEmbed(interaction, 'Error', 'Please state the reason for rejection below:');
+        try {
+          const reasonMsg = await (interaction.channel as TextChannel).awaitMessages({ max: 1, time: 300000, filter: m => m.author.id === interaction.user.id, errors: ['time'] });
+          const reasonString = reasonMsg.first()?.content;
+          await adminReject(interaction, db, row);
+          await notifyUser(submitter, `Your solution for task ${row.task_id} has been rejected. Reason: ${reasonString}`);
+          await followUpSuccessEmbed(interaction, 'Success', 'Entry rejected.');
+          break;
+        } catch (e) {
+          await followUpErrorEmbed(interaction, 'Error', 'Rejection reason timed out.');
+          return;
+        }
+      } else if(yesno && yesno.startsWith('yes')) {
+        await followUpSuccessEmbed(interaction, 'Success', 'Entry accepted.');
+        await adminAccept(interaction, db, row);
+        await notifyUser(submitter, `Your solution for task ${row.task_id} has been accepted.`);
+        break;
+      } else {
+        await followUpErrorEmbed(interaction, 'Error', 'Invalid response. Try again.');
+      }
+    }
+  } catch (e) {
+    await followUpErrorEmbed(interaction, 'Error', 'Validation timed out.');
+    return;
+  }
 }

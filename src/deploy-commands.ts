@@ -24,8 +24,6 @@ const commands = [
         .addAttachmentOption(option =>
           option.setName('file').setDescription('The file to submit.').setRequired(true)))
     .addSubcommand(subcommand =>
-      subcommand.setName('messages').setDescription('Read and clear your message queue.'))
-    .addSubcommand(subcommand =>
       subcommand.setName('hall').setDescription('Display the Hall of Fame of EsoRE.')
         .addIntegerOption(option =>
           option.setName('page').setDescription('The page number (optional, first if not given)').setRequired(false))),

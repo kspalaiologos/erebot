@@ -3,10 +3,7 @@ import * as dotenv from 'dotenv';
 import {
   openDb, GameRow, TaskRow, SolutionRow,
   fetchGameRow, fetchHallOfFame, fetchLeaderboardForRound, fetchSolvedByTableForRound, fetchTasksForRound,
-  countValidationQueue,
-  hasMessages,
-  getMessages,
-  clearMessages
+  countValidationQueue
 } from './database';
 import {
   sendSuccessEmbed,
@@ -23,7 +20,13 @@ dotenv.config();
 let db: Database;
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.DirectMessages,
+    GatewayIntentBits.MessageContent
+  ],
 });
 
 export const getOwner = () =>
@@ -97,18 +100,6 @@ ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('
         const data = await (await fetch(options.getAttachment('file')?.url!)).blob();
         const who = interaction.user;
         submitSolution(interaction, db, task!, who, data);
-        break;
-      }
-      case 'messages': {
-        const userId = interaction.user.id;
-        if (!await hasMessages(db, userId)) {
-          await sendSuccessEmbed(interaction, 'No messages', 'You have no messages.');
-          return;
-        }
-        const messages = await getMessages(db, userId, 10);
-        const messageList = messages.map((message, i) => `${i+1}. ${message.message}`).join('\n');
-        await sendSuccessEmbed(interaction, 'Messages', `You have ${messages.length} messages:\n${messageList}`);
-        await clearMessages(db, messages);
         break;
       }
     }
