@@ -110,3 +110,7 @@ Type "yes" to confirm.`);
   }
   await followUpSuccessEmbed(interaction, 'Success', 'Round creation confirmed.');
 }
+
+export const adminVerify = async (interaction: Interaction, db: Database) => {
+  await sendErrorEmbed(interaction, 'Error', 'This command is not implemented yet.');
+}

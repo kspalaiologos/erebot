@@ -35,6 +35,8 @@ const commands = [
         .addAttachmentOption(option =>
           option.setName('data').setDescription('Round data.').setRequired(true)))
     .addSubcommand(subcommand =>
+      subcommand.setName('verify').setDescription('Start the verification process for the next entry in the queue.'))
+    .addSubcommand(subcommand =>
       subcommand.setName('submitas').setDescription('Submit someone\'s solution for a task.')
         .addIntegerOption(option =>
           option.setName('task').setDescription('The task number.').setRequired(true))

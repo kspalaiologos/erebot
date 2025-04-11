@@ -14,7 +14,7 @@ import {
   sendErrorEmbed,
 } from './embed';
 import { formatPlural, formatUtcTime, trimTrailing } from './util';
-import { adminCreateRound } from './admin';
+import { adminCreateRound, adminVerify } from './admin';
 import { Database } from 'sqlite3';
 import { submitSolution } from './submit';
 
@@ -125,6 +125,10 @@ ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('
         const data = await (await fetch(options.getAttachment('file')?.url!)).blob();
         const who = options.getUser('user');
         submitSolution(interaction, db, task!, who!, data);
+        break;
+      }
+      case 'verify': {
+        adminVerify(interaction, db);
         break;
       }
     }
