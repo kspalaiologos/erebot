@@ -3,7 +3,10 @@ import * as dotenv from 'dotenv';
 import {
   openDb, GameRow, TaskRow, SolutionRow,
   fetchGameRow, fetchHallOfFame, fetchLeaderboardForRound, fetchSolvedByTableForRound, fetchTasksForRound,
-  countValidationQueue
+  countValidationQueue,
+  hasMessages,
+  getMessages,
+  clearMessages
 } from './database';
 import {
   sendSuccessEmbed,
@@ -91,6 +94,18 @@ ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('
         const data = await (await fetch(options.getAttachment('file')?.url!)).blob();
         const who = interaction.user;
         submitSolution(interaction, db, task!, who, data);
+        break;
+      }
+      case 'messages': {
+        const userId = interaction.user.id;
+        if (!await hasMessages(db, userId)) {
+          await sendSuccessEmbed(interaction, 'No messages', 'You have no messages.');
+          return;
+        }
+        const messages = await getMessages(db, userId, 10);
+        const messageList = messages.map((message, i) => `${i+1}. ${message.message}`).join('\n');
+        await sendSuccessEmbed(interaction, 'Messages', `You have ${messages.length} messages:\n${messageList}`);
+        await clearMessages(db, userId, 10);
         break;
       }
     }
