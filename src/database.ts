@@ -47,6 +47,12 @@ export type ValidationQueueRow = {
   score: number
 }
 
+export type MessageRow = {
+  id: number,
+  recipient_id: string,
+  message: string
+}
+
 const dbGet = <T,>(db: Database, sql: string, params: any[] = []) => {
   return new Promise<T | null>((resolve, _) => {
     db.get(sql, params, (err : Error | null, row : T) => {
@@ -109,3 +115,20 @@ export const insertValidationQueue = async (db: Database, userId: string, conten
   return dbGet<{id: number}>(db, 'SELECT last_insert_rowid() AS id');
 }
 
+export const sendMessage = async (db: Database, recipientId: string, text: string) =>
+  db.run('INSERT INTO messages (recipient_id, message) VALUES (?, ?)', [recipientId, text]);
+
+export const hasMessages = async (db: Database, recipientId: string) => {
+  const count = await dbGet<{count: number}>(db, 'SELECT COUNT(*) AS count FROM messages WHERE recipient_id = ?', [recipientId]);
+  return count ? count.count > 0 : false;
+}
+
+export const getMessages = async (db: Database, recipientId: string, limit: number) => 
+  dbAll<MessageRow>(db, 'SELECT * FROM messages WHERE recipient_id = ? ORDER BY id DESC LIMIT ?', [recipientId, limit]);
+
+export const clearMessages = async (db: Database, recipientId: string, limit: number) => {
+  const messages = await getMessages(db, recipientId, limit);
+  for (const message of messages)
+    db.run('DELETE FROM messages WHERE id = ?', [message.id]);
+  return messages;
+}

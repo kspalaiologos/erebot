@@ -1,4 +1,4 @@
-import { Interaction, TextChannel, User } from "discord.js";
+import { Interaction, User } from "discord.js";
 import { sendErrorEmbed, sendSuccessEmbed } from "./embed";
 import { Database } from "sqlite3";
 import { fetchGameRow, fetchTasksForRound, GameRow, insertValidationQueue, yankValidationQueue } from "./database";
