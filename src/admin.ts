@@ -1,7 +1,7 @@
 import { Interaction, TextChannel } from "discord.js";
 import jszip from 'jszip';
 import { followUpErrorEmbed, followUpSuccessEmbed, sendErrorEmbed, sendSuccessEmbed } from "./embed";
-import { insertGame, insertTask } from "./database";
+import { insertGame, insertTask, ValidationQueueRow } from "./database";
 import { Database } from "sqlite3";
 
 export const adminCreateRound = async (db: Database, interaction: Interaction, roundData: Blob) => {
@@ -112,5 +112,11 @@ Type "yes" to confirm.`);
 }
 
 export const adminVerify = async (interaction: Interaction, db: Database) => {
+  const adminAccept = async (interaction: Interaction, db: Database, row: ValidationQueueRow) => {
+
+  }
+  const adminReject = async (interaction: Interaction, db: Database, row: ValidationQueueRow) => {
+    
+  }
   await sendErrorEmbed(interaction, 'Error', 'This command is not implemented yet.');
 }

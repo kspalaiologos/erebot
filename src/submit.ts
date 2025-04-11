@@ -2,6 +2,8 @@ import { Interaction, User } from "discord.js";
 import { sendErrorEmbed, sendSuccessEmbed } from "./embed";
 import { Database } from "sqlite3";
 import { fetchGameRow, fetchTasksForRound, GameRow, insertValidationQueue, yankValidationQueue } from "./database";
+import { getOwner } from ".";
+import { notifyUser } from "./util";
 
 const isRoundActive = (row: GameRow) => {
   const now = new Date(Date.now());
@@ -27,4 +29,5 @@ export const submitSolution = async (interaction: Interaction, db: Database, tas
   }
   insertValidationQueue(db, user.id, buffer, taskId, eval(task.score_program)(arrayBuffer));
   await sendSuccessEmbed(interaction, 'Success', `Your solution has been submitted for validation.`);
+  await notifyUser(await getOwner(), `User ${user.tag} (${user.id}) submitted a solution for task ${taskId} (${task.description}).`);
 }

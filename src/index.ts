@@ -23,8 +23,11 @@ dotenv.config();
 let db: Database;
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.DirectMessages],
 });
+
+export const getOwner = () =>
+  client.users.fetch(process.env.OWNER_ID!);
 
 client.once('ready', async () => {
   db = await openDb();
@@ -105,12 +108,12 @@ ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('
         const messages = await getMessages(db, userId, 10);
         const messageList = messages.map((message, i) => `${i+1}. ${message.message}`).join('\n');
         await sendSuccessEmbed(interaction, 'Messages', `You have ${messages.length} messages:\n${messageList}`);
-        await clearMessages(db, userId, 10);
+        await clearMessages(db, messages);
         break;
       }
     }
   } else if (commandName == 'eadmin') {
-    if (interaction.user.id !== process.env.OWNER_ID) {
+    if (interaction.user.id !== (await getOwner()).id) {
       await sendErrorEmbed(interaction, 'Error', 'Insufficient permissions.');
       return;
     }

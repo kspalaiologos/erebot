@@ -126,8 +126,7 @@ export const hasMessages = async (db: Database, recipientId: string) => {
 export const getMessages = async (db: Database, recipientId: string, limit: number) => 
   dbAll<MessageRow>(db, 'SELECT * FROM messages WHERE recipient_id = ? ORDER BY id DESC LIMIT ?', [recipientId, limit]);
 
-export const clearMessages = async (db: Database, recipientId: string, limit: number) => {
-  const messages = await getMessages(db, recipientId, limit);
+export const clearMessages = async (db: Database, messages: MessageRow[]) => {
   for (const message of messages)
     db.run('DELETE FROM messages WHERE id = ?', [message.id]);
   return messages;
