@@ -25,7 +25,6 @@ export const adminCreateRound = async (db: Database, interaction: Interaction, r
     await sendErrorEmbed(interaction, 'Error', 'Invalid round data: index.json is missing required fields.');
     return;
   }
-  // Game table.
   const roundName = indexjson.name;
   let interpreterData, interpreterExt;
   if (indexjson.extraFiles) {
@@ -49,8 +48,6 @@ export const adminCreateRound = async (db: Database, interaction: Interaction, r
   }
   const startTime = Math.floor(Date.now() / 1000);
   const endTime = startTime + indexjson.duration * 24 * 60 * 60;
-  // Field: roundName, interpreterData, interpreterExt, startTime, endTime
-  // Task table.
   const tasks = []
   for (const task of indexjson.tasks) {
     const requiredFields = ['name', 'points', 'score_program'];
@@ -76,7 +73,6 @@ export const adminCreateRound = async (db: Database, interaction: Interaction, r
       score_program: task.score_program
     });
   }
-  // Ask the user for confirmation
   await sendSuccessEmbed(interaction, 'Confirm',
 `Are you sure you want to create a new round with the following details?
 
@@ -96,13 +92,11 @@ Type "yes" to confirm.`);
     await sendErrorEmbed(interaction, 'Error', 'Round creation cancelled.');
     return;
   }
-  // Insert the game into the database
   const gameId = await insertGame(db, roundName, interpreterData, interpreterExt, startTime, endTime);
   if (!gameId) {
     await sendErrorEmbed(interaction, 'Error', 'Failed to create round.');
     return;
   }
-  // Insert the tasks into the database
   for (const task of tasks) {
     await insertTask(db, gameId.id, task.name, task.points, task.score_program);
   }
