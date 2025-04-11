@@ -14,6 +14,7 @@ import { formatPlural, formatUtcTime, trimTrailing } from './util';
 import { adminCreateRound, adminVerify } from './admin';
 import { Database } from 'sqlite3';
 import { submitSolution } from './submit';
+import { tutorial } from './tutorial';
 
 dotenv.config();
 
@@ -100,6 +101,10 @@ ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('
         const data = await (await fetch(options.getAttachment('file')?.url!)).blob();
         const who = interaction.user;
         submitSolution(interaction, db, task!, who, data);
+        break;
+      }
+      case 'tutorial': {
+        await tutorial(interaction);
         break;
       }
     }
