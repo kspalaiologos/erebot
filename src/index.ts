@@ -13,7 +13,7 @@ import {
 import { formatPlural, formatUtcTime, trimTrailing } from './util';
 import { adminCreateRound, adminVerify } from './admin';
 import { Database } from 'sqlite3';
-import { submitSolution } from './submit';
+import { querySolution, submitSolution } from './submit';
 import { tutorial } from './tutorial';
 
 dotenv.config();
@@ -108,7 +108,11 @@ ${(await fetchHallOfFame(db, page)).map((entry, i) => `${i+1}. ${entry}`).join('
         break;
       }
       case 'solution': {
-        
+        const task = options.getInteger('task');
+        const round = options.getInteger('round');
+        const author = options.getUser('author');
+        await querySolution(interaction, db, task!, round!, author!);
+        break;
       }
     }
   } else if (commandName == 'eadmin') {
