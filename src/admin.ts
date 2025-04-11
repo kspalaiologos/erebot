@@ -3,7 +3,7 @@ import jszip from 'jszip';
 import { followUpErrorEmbed, followUpSuccessEmbed, sendErrorEmbed, sendSuccessEmbed, sendSuccessEmbedWithAttachment } from "./embed";
 import { insertGame, insertTask, peekValidationQueue, popValidationQueue, transferValidationQueue, ValidationQueueRow } from "./database";
 import { Database } from "sqlite3";
-import { notifyUser } from "./util";
+import { notifyUser, prompt } from "./util";
 
 export const adminCreateRound = async (db: Database, interaction: Interaction, roundData: Blob) => {
   let zipfile: jszip;
@@ -88,15 +88,12 @@ export const adminCreateRound = async (db: Database, interaction: Interaction, r
 ${tasks.map((task, i) => `${i + 1}. ${task.name} (${task.points} points)`).join('\n')}
 
 Type "yes" to confirm.`);
-  try {
-    const response = await (interaction.channel as TextChannel).awaitMessages({ max: 1, time: 30000, filter: m => m.author.id === interaction.user.id, errors: ['time'] });
-    const yesno = response.first()?.content.toLowerCase();
-    if (yesno && !yesno.startsWith('yes')) {
-      await followUpErrorEmbed(interaction, 'Error', 'Round creation cancelled.');
-      return;
-    }
-  } catch (e) {
-    await followUpErrorEmbed(interaction, 'Error', 'Round creation timed out.');
+  const response = await prompt(30000, interaction, (msg) => {
+    const yesno = msg.toLowerCase();
+    return yesno.startsWith('yes') || yesno.startsWith('no');
+  });
+  if (!response || response.toLowerCase().startsWith('no')) {
+    await sendErrorEmbed(interaction, 'Error', 'Round creation cancelled.');
     return;
   }
   // Insert the game into the database
@@ -131,34 +128,23 @@ export const adminVerify = async (interaction: Interaction, db: Database) => {
   const randomName = Math.random().toString(36).substring(2, 8);
   const attachment = new AttachmentBuilder(interpreterBuffer).setName(`v${row.task_id}-${randomName}`);
   await sendSuccessEmbedWithAttachment(interaction, 'Validation Queue', `Entry in the validation queue for task ${row.task_id}.\nSend "yes" to accept the entry and "no" to reject it.`, attachment);
-  try {
-    for (;;) {
-      const response = await (interaction.channel as TextChannel).awaitMessages({ max: 1, time: 300000, filter: m => m.author.id === interaction.user.id, errors: ['time'] });
-      const yesno = response.first()?.content.toLowerCase();
-      if (yesno && yesno.startsWith('no')) {
-        await followUpErrorEmbed(interaction, 'Error', 'Please state the reason for rejection below:');
-        try {
-          const reasonMsg = await (interaction.channel as TextChannel).awaitMessages({ max: 1, time: 300000, filter: m => m.author.id === interaction.user.id, errors: ['time'] });
-          const reasonString = reasonMsg.first()?.content;
-          await adminReject(interaction, db, row);
-          await notifyUser(submitter, `Your solution for task ${row.task_id} has been rejected. Reason: ${reasonString}`);
-          await followUpSuccessEmbed(interaction, 'Success', 'Entry rejected.');
-          break;
-        } catch (e) {
-          await followUpErrorEmbed(interaction, 'Error', 'Rejection reason timed out.');
-          return;
-        }
-      } else if(yesno && yesno.startsWith('yes')) {
-        await followUpSuccessEmbed(interaction, 'Success', 'Entry accepted.');
-        await adminAccept(interaction, db, row);
-        await notifyUser(submitter, `Your solution for task ${row.task_id} has been accepted.`);
-        break;
-      } else {
-        await followUpErrorEmbed(interaction, 'Error', 'Invalid response. Try again.');
-      }
+  const message = await prompt(30000, interaction, (msg) => {
+    const yesno = msg.toLowerCase();
+    return yesno.startsWith('yes') || yesno.startsWith('no');
+  });
+  if (!message || message.toLowerCase().startsWith('no')) {
+    await followUpErrorEmbed(interaction, 'Error', 'Please state the reason for rejection below:');
+    const reasonMsg = await prompt(30000, interaction, _ => true);
+    if (!reasonMsg) {
+      await followUpErrorEmbed(interaction, 'Error', 'Rejection reason timed out.');
+      return;
     }
-  } catch (e) {
-    await followUpErrorEmbed(interaction, 'Error', 'Validation timed out.');
-    return;
+    await adminReject(interaction, db, row);
+    await notifyUser(submitter, `Your solution for task ${row.task_id} has been rejected. Reason: ${reasonMsg}`);
+    await followUpSuccessEmbed(interaction, 'Success', 'Entry rejected.');
+  } else {
+    await followUpSuccessEmbed(interaction, 'Success', 'Entry accepted.');
+    await adminAccept(interaction, db, row);
+    await notifyUser(submitter, `Your solution for task ${row.task_id} has been accepted.`);
   }
 }
