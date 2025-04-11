@@ -28,14 +28,6 @@ client.once('ready', async () => {
   console.log(`Logged in as ${client.user?.tag}!`);
 });
 
-const isRoundActive = (row: GameRow) => {
-  const now = new Date(Date.now());
-  const start = row['start_time_utc'] ? new Date(parseInt(row['start_time_utc']) * 1000) : null;
-  const end = row['end_time_utc'] ? new Date(parseInt(row['end_time_utc']) * 1000) : null;
-  if (start == null || end == null) return false;
-  return start <= now && now <= end;
-}
-
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isCommand()) return;
 
